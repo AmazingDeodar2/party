@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>派对时间！</title>
+  <script src="./gameData.js"></script>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --panel: #181c30;
+      --panel-2: #202641;
+      --text: #e9ecf6;
+      --muted: #aeb6d3;
+      --accent: #8fb7ff;
+      --danger: #ff8f8f;
+      --ok: #8fe0a3;
+      --border: #2b3357;
+      --gold: #ffd98f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, #151a2f, #0c0f1b 60%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .hidden { display: none !important; }
+
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .panel {
+      background: rgba(24, 28, 48, 0.96);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(15, 18, 32, 0.65);
+    }
+
+    h1, h2, h3 { margin: 0 0 10px; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 16px; color: var(--accent); }
+
+    .muted { color: var(--muted); font-size: 13px; }
+    .small { font-size: 12px; color: var(--muted); }
+    .preline { white-space: pre-line; }
+
+    button {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      cursor: pointer;
+      background: var(--panel-2);
+      transition: 120ms ease;
+      font: inherit;
+    }
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled { opacity: 0.55; cursor: default; }
+    button.primary { border-color: rgba(255,143,143,.45); }
+    button.secondary { border-color: rgba(143,224,163,.45); }
+    button.gold { border-color: rgba(255,217,143,.55); color: var(--gold); }
+    button.ghost { color: var(--muted); }
+
+    .choices {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    /* 开始页 */
+    .hero {
+      min-height: calc(100vh - 32px);
+      display: grid;
+      place-items: center;
+    }
+    .hero-box {
+      width: min(780px, 100%);
+      text-align: center;
+      padding: 24px;
+      border-radius: 18px;
+      background: rgba(24, 28, 48, 0.96);
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 30px rgba(0,0,0,.28);
+    }
+    .hero-sub {
+      color: var(--muted);
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+    .hero-quote {
+      margin: 14px auto 0;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15,18,32,.6);
+      color: #dbe6ff;
+      max-width: 620px;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* 游戏页布局 */
+    .app {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      position: sticky;
+      top: 12px;
+      height: fit-content;
+    }
+
+    .events-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .events-list li { margin-bottom: 6px; }
+
+    .suspect-grid {
+      display: grid;
+      gap: 8px;
+      max-height: 500px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .suspect-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+    .suspect-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .suspect-btn.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(143,183,255,.12);
+    }
+    .suspect-btn.locked {
+      opacity: 0.96;
+      background: #1a1f36;
+    }
+
+    .suspect-head {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* 小圆头像（侧边栏 / 结局记录） */
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #111528;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      line-height: 1;
+      user-select: none;
+      flex: 0 0 auto;
+      overflow: hidden;
+    }
+    .avatar.big {
+      width: 54px;
+      height: 54px;
+      font-size: 26px;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 28%;
+      border-radius: 50%;
+      display: block;
+    }
+
+    /* 竖卡立绘（主舞台用） */
+    .avatar-portrait {
+      width: 92px;
+      height: 124px; /* 接近 275x369 比例 */
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #111528;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      position: relative;
+      box-shadow: 0 6px 14px rgba(0,0,0,.22);
+    }
+    .avatar-portrait::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .avatar-portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 20%;
+      display: block;
+    }
+    .avatar-portrait.big {
+      width: 118px;
+      height: 158px;
+      border-radius: 14px;
+    }
+    .avatar-portrait.fallback {
+      color: var(--muted);
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .suspect-name {
+      font-weight: 700;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 11px;
+      color: #d8def8;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 1px 7px;
+      background: #141a2f;
+    }
+
+    .status-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: #14182b;
+    }
+    .tag.guilty { border-color: rgba(255,143,143,.45); color: var(--danger); }
+    .tag.innocent { border-color: rgba(143,224,163,.45); color: var(--ok); }
+    .tag.gold { border-color: rgba(255,217,143,.45); color: var(--gold); }
+
+    .main {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .stage { min-height: 340px; }
+
+    .tab-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .hero-line {
+      border-left: 3px solid var(--accent);
+      padding: 8px 10px;
+      margin-top: 10px;
+      background: rgba(143,183,255,.06);
+      border-radius: 8px;
+      color: #dbe6ff;
+    }
+
+    .reaction-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #13172a;
+    }
+
+    .result-panel {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(20, 24, 42, 0.92);
+    }
+
+    .judge-record {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .record-item {
+      border: 1px solid var(--border);
+      background: #121628;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    /* 成就页 */
+    .achievement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .achievement-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(15,18,32,.6);
+      padding: 12px;
+    }
+    .achievement-item.unlocked {
+      border-color: rgba(255,217,143,.45);
+      box-shadow: inset 0 0 0 1px rgba(255,217,143,.12);
+    }
+
+    .achievement-icon {
+      font-size: 20px;
+      margin-right: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .hero { min-height: auto; padding-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+
+    <!-- 开始页面 -->
+    <section id="screen-start" class="hero">
+      <div class="hero-box">
+        <h1 id="start-title">派对时间！</h1>
+        <div class="hero-sub">真的是派对吗？</div>
+
+        <div class="hero-quote preline" id="start-quote"></div>
+
+        <div class="choices" style="justify-content:center; margin-top:18px;">
+          <button class="gold" id="btn-start-game">开始调查</button>
+          <button id="btn-go-achievements">成就界面</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 成就页面 -->
+    <section id="screen-achievements" class="hidden">
+      <div class="top-nav">
+        <h2 style="margin:0;">成就界面</h2>
+        <div class="choices" style="margin-top:0;">
+          <button class="ghost" id="btn-ach-back-start">返回开始页面</button>
+          <button class="ghost" id="btn-ach-reset">重置成就记录</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="muted" id="achievement-summary">已解锁 0 / 6 种结局</div>
+        <div class="achievement-grid" id="achievement-grid"></div>
+      </div>
+    </section>
+
+    <!-- 游戏页面 -->
+    <section id="screen-game" class="hidden">
+      <div class="top-nav">
+        <div>
+          <h2 id="game-title" style="margin:0;"></h2>
+          <div class="muted"></div>
+        </div>
+        <div class="choices" style="margin-top:0;">
+          <button class="ghost" id="btn-game-back-start">返回开始页面</button>
+          <button class="ghost" id="btn-restart">重开本轮</button>
+        </div>
+      </div>
+
+      <div class="app">
+        <aside class="sidebar">
+          <section class="panel">
+            <h2>多少有点太乱了吧！</h2>
+            <ol class="events-list" id="events-list"></ol>
+          </section>
+
+          <section class="panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <h2 style="margin:0;">在场人物</h2>
+              <div class="muted" id="progress-text">0 / 9 已锁定</div>
+            </div>
+            <div class="suspect-grid" id="suspect-grid"></div>
+          </section>
+        </aside>
+
+        <main class="main">
+          <section class="panel stage" id="stage-panel">
+            <div class="tab-strip">
+              <button class="ghost" id="tab-stage-investigation">调查视图</button>
+              <button class="ghost" id="tab-stage-scene">场景总览</button>
+            </div>
+            <div id="stage-content"></div>
+          </section>
+
+          <section class="panel hidden" id="ending-panel">
+            <div class="result-panel">
+              <div class="tab-strip">
+                <button class="ghost" id="tab-ending">结局</button>
+                <button class="gold hidden" id="tab-recap">真相复盘（解锁）</button>
+              </div>
+
+              <div id="ending-view">
+                <h2 id="ending-title"></h2>
+                <div class="preline" id="ending-text"></div>
+
+                <h3 style="margin-top:14px;">你的裁定记录</h3>
+                <div class="judge-record" id="judge-record"></div>
+
+                <div class="choices" style="margin-top:14px;">
+                  <button class="ghost" id="btn-restart-from-end">再来一轮</button>
+                  <button id="btn-ending-go-achievements">查看成就</button>
+                </div>
+              </div>
+
+              <div id="recap-view" class="hidden">
+                <h2 id="recap-title"></h2>
+                <div class="preline" id="recap-text"></div>
+
+                <div class="choices" style="margin-top:14px;">
+                  <button class="ghost" id="btn-restart-from-recap">再来一轮</button>
+                  <button id="btn-recap-go-achievements">查看成就</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ===== 结局成就配置 =====
+    const ENDING_META = {
+    good_end: {
+        name: "完美结局",
+        icon: "🎉",
+        desc: "九人结果全部对上，派对虽然晚点，但终于正常开场。"
+    },
+    mixed: {
+        name: "勉强开场",
+        icon: "🧹",
+        desc: "有对有错，现场在互相吐槽中勉强恢复。"
+    },
+    too_kind: {
+        name: "都挺不容易",
+        icon: "🙂",
+        desc: "谁都不往名单里放，结果也没人先动手收拾。"
+    },
+    handler_blame: {
+        name: "完美错位",
+        icon: "🪞",
+        desc: "你的结果和现场实际情况整整齐齐错开。"
+    },
+    label_judge: {
+        name: "一锅端",
+        icon: "⚖️",
+        desc: "九个人全进名单，派对原地升级成集体申诉会。"
+    },
+    conspiracy: {
+        name: "伊德海拉入侵预案",
+        icon: "🌀",
+        desc: "特定组合触发异常事件，熟人局事故突然升级。"
+    },
+
+    // 新增暗线结局
+    fff_club: {
+        name: "FFF团",
+        icon: "🔥",
+        desc: "你点出了某个微妙四人组，现场气氛迅速转入熟人局八卦频道。"
+    },
+    best_partner: {
+        name: "最佳拍档",
+        icon: "🎬",
+        desc: "你看出了两人的配合默契，后来她们真把这份默契拍进了电影里。"
+    },
+    dorm_headache: {
+        name: "寝室长的噩梦",
+        icon: "🛏️",
+        desc: "这份名单精准唤醒了某人管理男生宿舍的旧日创伤。"
+    },
+    fox_slip: {
+        name: "狐狸会漏出马脚",
+        icon: "🦊",
+        desc: "你把混在人堆里看戏的那个东西先拎了出来。"
+    }
+    };
+
+    // ===== 本地存储 Key =====
+    const ACHIEVEMENT_STORAGE_KEY = "party_disaster_ending_achievements_v1";
+
+    // ===== 开始页随机文案（进门前语气）=====
+    const START_SCREEN_LINES = [
+      "你带着礼物站在门口，已经想好进去先夸一句布置真不错。",
+      "你在门外还听见里面很热闹——至少听起来像是热闹。",
+      "来之前你以为今晚的任务只有吃蛋糕，现在看来可能不止。",
+      "门把手刚压下去，你突然有种不太妙、但又很好笑的预感。"
+    ];
+
+    // ===== 头像文件映射 =====
+    // 默认读取 ./avatars/ 目录。若图片直接放在 index 同级目录，改成 "./"
+    const AVATAR_BASE_PATH = "./";
+
+    const AVATAR_FILE_MAP = {
+      "豆付皮": "doufupi.png",
+      "豆雅财": "douyacai.png",
+      "豆莎包": "doushabao.png",
+      "豆池": "douchi.png",
+      "豆知儿": "douzhier.png",
+      "豆蛾渊": "doueyuan.png",
+      "豆坂将": "doubanjiang.png",
+      "豆乃": "dounai.png",
+      "豆倪万": "douniwan.png"
+    };
+    const AVATAR_CROP_MAP = {
+    // 默认不写就是 "center 28%"
+    // 写法：x y（可以用百分比）
+    "豆雅财": "80% 28%",
+    "豆池": "center 60%",
+    "豆蛾渊": "40% 28%"
+    };
+    // ===== 状态 =====
+    const state = {
+      screen: "start", // start | achievements | game
+      phase: "intro",  // intro | question | reacted | ended
+      selectedId: null,
+      judgments: {},
+      lockedIds: new Set(),
+      introVariant: "",
+      ending: null,
+      endingTab: "ending", // ending | recap
+      stageTab: "investigation" // investigation | scene
+    };
+
+    // ===== DOM =====
+    const screenStartEl = document.getElementById("screen-start");
+    const screenAchievementsEl = document.getElementById("screen-achievements");
+    const screenGameEl = document.getElementById("screen-game");
+
+    const startTitleEl = document.getElementById("start-title");
+    const startQuoteEl = document.getElementById("start-quote");
+
+    const btnStartGame = document.getElementById("btn-start-game");
+    const btnGoAchievements = document.getElementById("btn-go-achievements");
+
+    const btnAchBackStart = document.getElementById("btn-ach-back-start");
+    const btnAchReset = document.getElementById("btn-ach-reset");
+    const achievementSummaryEl = document.getElementById("achievement-summary");
+    const achievementGridEl = document.getElementById("achievement-grid");
+
+    const gameTitleEl = document.getElementById("game-title");
+    const btnGameBackStart = document.getElementById("btn-game-back-start");
+    const btnRestart = document.getElementById("btn-restart");
+
+    const eventsListEl = document.getElementById("events-list");
+    const suspectGridEl = document.getElementById("suspect-grid");
+    const progressTextEl = document.getElementById("progress-text");
+    const stageContentEl = document.getElementById("stage-content");
+
+    const tabStageInvestigationEl = document.getElementById("tab-stage-investigation");
+    const tabStageSceneEl = document.getElementById("tab-stage-scene");
+
+    const endingPanelEl = document.getElementById("ending-panel");
+    const endingTitleEl = document.getElementById("ending-title");
+    const endingTextEl = document.getElementById("ending-text");
+    const judgeRecordEl = document.getElementById("judge-record");
+
+    const tabEndingEl = document.getElementById("tab-ending");
+    const tabRecapEl = document.getElementById("tab-recap");
+    const endingViewEl = document.getElementById("ending-view");
+    const recapViewEl = document.getElementById("recap-view");
+    const recapTitleEl = document.getElementById("recap-title");
+    const recapTextEl = document.getElementById("recap-text");
+
+    const btnRestartFromEnd = document.getElementById("btn-restart-from-end");
+    const btnRestartFromRecap = document.getElementById("btn-restart-from-recap");
+    const btnEndingGoAchievements = document.getElementById("btn-ending-go-achievements");
+    const btnRecapGoAchievements = document.getElementById("btn-recap-go-achievements");
+
+    // ===== 工具函数 =====
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function nl2br(str) {
+      return escapeHtml(str).replace(/\n/g, "<br>");
+    }
+
+    function getSuspectById(id) {
+      return GAME_DATA.suspects.find(s => s.id === id);
+    }
+
+    function allLocked() {
+      return state.lockedIds.size === GAME_DATA.suspects.length;
+    }
+
+    function getAvatar(s) {
+      const fileName = AVATAR_FILE_MAP[s.name];
+      if (fileName) return AVATAR_BASE_PATH + fileName;
+      return null;
+    }
+
+    function getAvatarFallbackText(s) {
+      return s.avatar || s.name?.[0] || "🙂";
+    }
+
+    function getAvatarHtml(s, extraClass = "") {
+        const src = getAvatar(s);
+        const fallback = escapeHtml(getAvatarFallbackText(s));
+        const cls = extraClass ? `avatar ${extraClass}` : "avatar";
+        const crop = AVATAR_CROP_MAP[s.name] || "center 28%";
+
+        if (src) {
+            return `
+            <div class="${cls}" aria-hidden="true">
+                <img src="${escapeHtml(src)}" alt="${escapeHtml(s.name)}头像"
+                    style="object-position:${escapeHtml(crop)};"
+                    onerror="this.remove(); this.parentElement.textContent='${fallback}';" />
+            </div>
+            `;
+        }
+
+        return `<div class="${cls}" aria-hidden="true">${fallback}</div>`;
+    }
+
+    function getPortraitAvatarHtml(s, extraClass = "") {
+      const src = getAvatar(s);
+      const fallback = escapeHtml(getAvatarFallbackText(s));
+      const cls = extraClass ? `avatar-portrait ${extraClass}` : "avatar-portrait";
+
+      if (src) {
+        return `
+          <div class="${cls}" aria-hidden="true">
+            <img src="${escapeHtml(src)}" alt="${escapeHtml(s.name)}立绘"
+                 onerror="this.remove(); this.parentElement.classList.add('fallback'); this.parentElement.textContent='${fallback}';" />
+          </div>
+        `;
+      }
+
+      return `<div class="${cls} fallback" aria-hidden="true">${fallback}</div>`;
+    }
+
+    // ===== 成就存储 =====
+    function loadAchievements() {
+      try {
+        const raw = localStorage.getItem(ACHIEVEMENT_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveAchievements(keys) {
+      localStorage.setItem(ACHIEVEMENT_STORAGE_KEY, JSON.stringify([...new Set(keys)]));
+    }
+
+    function unlockEndingAchievement(endingKey) {
+      if (!endingKey) return;
+      const current = loadAchievements();
+      if (!current.includes(endingKey)) {
+        current.push(endingKey);
+        saveAchievements(current);
+      }
+    }
+
+    function resetAchievements() {
+      localStorage.removeItem(ACHIEVEMENT_STORAGE_KEY);
+    }
+
+    // ===== 页面切换 =====
+    function setScreen(screen) {
+      state.screen = screen;
+
+      screenStartEl.classList.toggle("hidden", screen !== "start");
+      screenAchievementsEl.classList.toggle("hidden", screen !== "achievements");
+      screenGameEl.classList.toggle("hidden", screen !== "game");
+
+      if (screen === "start") renderStartScreen();
+      if (screen === "achievements") renderAchievementsScreen();
+      if (screen === "game") renderGameScreen();
+    }
+
+    // ===== 开始页 =====
+    function renderStartScreen() {
+      startTitleEl.textContent = GAME_DATA.title || "派对时间！";
+      const line = START_SCREEN_LINES[Math.floor(Math.random() * START_SCREEN_LINES.length)];
+      startQuoteEl.innerHTML = nl2br("你收到一张豆家人的派对邀请。\n按邀请函上的说法，今晚会是一场“绝对不会出意外”的完美聚会。\n" + line);
+    }
+
+    // ===== 成就页 =====
+    function renderAchievementsScreen() {
+      const unlocked = new Set(loadAchievements());
+      const entries = Object.entries(ENDING_META);
+
+      achievementSummaryEl.textContent = `已解锁 ${unlocked.size} / ${entries.length} 种结局`;
+
+      achievementGridEl.innerHTML = "";
+      entries.forEach(([key, meta]) => {
+        const isUnlocked = unlocked.has(key);
+        const item = document.createElement("div");
+        item.className = "achievement-item" + (isUnlocked ? " unlocked" : "");
+        item.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;">
+            <span class="achievement-icon">${isUnlocked ? meta.icon : "❔"}</span>
+            <div style="font-weight:700;">${escapeHtml(meta.name)}</div>
+        </div>
+        <div class="small" style="margin-top:8px;">
+            ${escapeHtml(isUnlocked ? meta.desc : "尚未解锁。继续尝试不同的选择组合。")}
+        </div>
+        <div style="margin-top:8px;">
+            <span class="tag ${isUnlocked ? "gold" : ""}">${isUnlocked ? "已解锁" : "未解锁"}</span>
+        </div>
+        `;
+        achievementGridEl.appendChild(item);
+      });
+    }
+
+    // ===== 游戏重置（单局）=====
+    function resetGameRun() {
+      state.phase = "intro";
+      state.selectedId = null;
+      state.judgments = {};
+      state.lockedIds = new Set();
+      state.introVariant = typeof GAME_DATA.getRandomIntroLine === "function"
+        ? GAME_DATA.getRandomIntroLine()
+        : "";
+      state.ending = null;
+      state.endingTab = "ending";
+      state.stageTab = "investigation";
+      endingPanelEl.classList.add("hidden");
+      renderGameScreen();
+    }
+
+    // ===== 游戏页渲染：侧边栏 =====
+    function renderGameSidebar() {
+      gameTitleEl.textContent = GAME_DATA.title || "派对时间！";
+      progressTextEl.textContent = `${state.lockedIds.size} / ${GAME_DATA.suspects.length} 已锁定`;
+
+      eventsListEl.innerHTML = "";
+      (GAME_DATA.visibleEvents || []).forEach(ev => {
+        const li = document.createElement("li");
+        li.textContent = ev;
+        eventsListEl.appendChild(li);
+      });
+
+      suspectGridEl.innerHTML = "";
+      GAME_DATA.suspects.forEach(s => {
+        const isLocked = state.lockedIds.has(s.id);
+        const active = state.selectedId === s.id;
+
+        const btn = document.createElement("button");
+        btn.className = `suspect-btn${isLocked ? " locked" : ""}${active ? " active" : ""}`;
+        btn.innerHTML = `
+          <div class="suspect-head">
+            ${getAvatarHtml(s)}
+            <div>
+              <div class="suspect-name">
+                <span>${escapeHtml(s.name)}</span>
+                <span class="badge">${escapeHtml((s.role || "").split("，")[0] || "人物")}</span>
+              </div>
+              <div class="small">${escapeHtml(s.eventTitle || "")}</div>
+            </div>
+          </div>
+          <div class="status-row" id="status-${s.id}"></div>
+        `;
+
+        btn.addEventListener("click", () => {
+          if (state.phase === "ended") return;
+          state.selectedId = s.id;
+          state.phase = isLocked ? "reacted" : "question";
+          state.stageTab = "investigation";
+          renderGameScreen();
+        });
+
+        suspectGridEl.appendChild(btn);
+
+        const statusRow = btn.querySelector(`#status-${s.id}`);
+        if (isLocked) {
+          const judged = state.judgments[s.id];
+          statusRow.innerHTML = `
+            <span class="tag ${judged ? "guilty" : "innocent"}">你判：${judged ? "是" : "否"}</span>
+            <span class="tag">已锁定</span>
+          `;
+        } else {
+          statusRow.innerHTML = `<span class="tag">未判定</span>`;
+        }
+      });
+    }
+
+    // ===== 游戏页渲染：舞台 =====
+    function renderIntroStage() {
+      stageContentEl.innerHTML = `
+        <div class="card">
+          <h2>开场</h2>
+          <div class="preline">${nl2br(GAME_DATA.introBase || "")}</div>
+          ${state.introVariant ? `<div class="hero-line">${escapeHtml(state.introVariant)}</div>` : ""}
+          <div class="preline" style="margin-top:8px;">屋里九个人齐刷刷看向你：你来得正好，快判。</div>
+        </div>
+
+        <div class="card" style="margin-top:10px;">
+          <h2>现场</h2>
+          <div class="preline">${nl2br(GAME_DATA.sceneDescription || "")}</div>
+        </div>
+      `;
+    }
+
+    function renderSceneOverviewStage() {
+      const currentName = state.selectedId ? getSuspectById(state.selectedId).name : "未选择";
+      const currentLocked = state.selectedId ? state.lockedIds.has(state.selectedId) : false;
+
+      stageContentEl.innerHTML = `
+        <div class="card">
+          <h2>场景总览</h2>
+          <div class="preline">${nl2br(GAME_DATA.sceneDescription || "")}</div>
+        </div>
+
+        <div class="card" style="margin-top:10px;">
+          <h2>当前焦点</h2>
+          <div class="muted">人物：${escapeHtml(currentName)} ${state.selectedId ? `（${currentLocked ? "已锁定" : "未锁定"}）` : ""}</div>
+          <div class="muted" style="margin-top:4px;">进度：${state.lockedIds.size} / ${GAME_DATA.suspects.length}</div>
+        </div>
+      `;
+    }
+
+    function renderQuestionStage(s) {
+      stageContentEl.innerHTML = `
+        <div class="card">
+          <div style="display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:start;">
+            ${getPortraitAvatarHtml(s, "big")}
+            <div>
+              <h2 style="margin:0;">${escapeHtml(s.name)}</h2>
+              <div class="muted">${escapeHtml(s.role || "")}</div>
+              <div class="small" style="margin-top:4px;">${escapeHtml(s.eventTitle || "")}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:10px;">
+          <div class="preline">${nl2br(s.questionText || "")}</div>
+
+          <div class="choices">
+            <button class="primary" id="judge-guilty">判定：是凶手</button>
+            <button class="secondary" id="judge-innocent">判定：不是凶手</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("judge-guilty").addEventListener("click", () => applyJudgment(s.id, true));
+      document.getElementById("judge-innocent").addEventListener("click", () => applyJudgment(s.id, false));
+    }
+
+    function renderLockedStage(s) {
+      const judged = state.judgments[s.id];
+      const reactionText = judged ? s.reactions.guilty : s.reactions.innocent;
+
+      stageContentEl.innerHTML = `
+        <div class="card">
+          <div style="display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:start;">
+            ${getPortraitAvatarHtml(s, "big")}
+            <div>
+              <h2 style="margin:0;">${escapeHtml(s.name)}</h2>
+              <div class="muted">${escapeHtml(s.role || "")}</div>
+              <div class="small" style="margin-top:4px;">对应事件：${escapeHtml(s.eventTitle || "")}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:10px;">
+          <div class="status-row">
+            <span class="tag ${judged ? "guilty" : "innocent"}">你判：${judged ? "是凶手" : "不是凶手"}</span>
+            <span class="tag">已锁定</span>
+          </div>
+
+          <div class="reaction-box preline">${nl2br(reactionText || "")}</div>
+        </div>
+      `;
+    }
+
+    function renderNoSelectionStage() {
+      stageContentEl.innerHTML = `
+        <div class="card">
+          <h2>现场</h2>
+          <div class="muted">从左侧选择一名在场人物。</div>
+        </div>
+      `;
+    }
+
+    function setStageTab(tab) {
+      state.stageTab = tab;
+      renderGameScreen();
+    }
+
+    function renderStage() {
+      tabStageInvestigationEl.classList.toggle("gold", state.stageTab === "investigation");
+      tabStageSceneEl.classList.toggle("gold", state.stageTab === "scene");
+
+      if (state.stageTab === "scene") {
+        renderSceneOverviewStage();
+        return;
+      }
+
+      if (state.phase === "intro" && !state.selectedId) {
+        renderIntroStage();
+        return;
+      }
+
+      if (!state.selectedId) {
+        renderNoSelectionStage();
+        return;
+      }
+
+      const s = getSuspectById(state.selectedId);
+      const isLocked = state.lockedIds.has(s.id);
+
+      if (isLocked) renderLockedStage(s);
+      else renderQuestionStage(s);
+    }
+
+    // ===== 结局区 =====
+    function setEndingTab(tab, canShowRecap = !!(state.ending && state.ending.unlockTruthRecap)) {
+      if (tab === "recap" && !canShowRecap) tab = "ending";
+      state.endingTab = tab;
+
+      const showRecap = tab === "recap" && canShowRecap;
+      endingViewEl.classList.toggle("hidden", showRecap);
+      recapViewEl.classList.toggle("hidden", !showRecap);
+
+      tabEndingEl.classList.toggle("gold", !showRecap);
+      tabRecapEl.classList.toggle("gold", showRecap);
+    }
+
+    function renderEndingPanel() {
+      if (!state.ending) return;
+
+      endingTitleEl.textContent = state.ending.title || "结局";
+      endingTextEl.innerHTML = nl2br(state.ending.text || "");
+
+      judgeRecordEl.innerHTML = "";
+      GAME_DATA.suspects.forEach(s => {
+        const judged = state.judgments[s.id];
+        const item = document.createElement("div");
+        item.className = "record-item";
+        item.innerHTML = `
+          <div style="display:flex;gap:8px;align-items:center;">
+            ${getAvatarHtml(s)}
+            <div>
+              <div style="font-weight:700;">${escapeHtml(s.name)}</div>
+              <div class="small">${escapeHtml(s.eventTitle || "")}</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            <span class="tag ${judged ? "guilty" : "innocent"}">你判：${judged ? "是凶手" : "不是凶手"}</span>
+          </div>
+        `;
+        judgeRecordEl.appendChild(item);
+      });
+
+        const canShowRecap = false;
+        tabRecapEl.classList.add("hidden");
+
+        // 不再使用复盘内容
+        recapTitleEl.textContent = "";
+        recapTextEl.innerHTML = "";
+
+      endingPanelEl.classList.remove("hidden");
+      setEndingTab(state.endingTab, canShowRecap);
+    }
+
+    // ===== 游戏页总渲染 =====
+    function renderGameScreen() {
+      renderGameSidebar();
+      renderStage();
+
+      if (allLocked()) {
+        const firstTimeEnterEnding = state.phase !== "ended";
+        state.phase = "ended";
+
+        if (firstTimeEnterEnding || !state.ending) {
+          state.ending = GAME_DATA.evaluateEnding(state);
+          unlockEndingAchievement(state.ending.key);
+        }
+
+        renderEndingPanel();
+      } else {
+        endingPanelEl.classList.add("hidden");
+      }
+    }
+
+    // ===== 判定逻辑 =====
+    function applyJudgment(id, judgedGuilty) {
+      if (state.lockedIds.has(id)) return;
+      state.judgments[id] = judgedGuilty;
+      state.lockedIds.add(id);
+      state.selectedId = id;
+      state.phase = "reacted";
+      renderGameScreen();
+    }
+
+    // ===== 事件绑定 =====
+    btnStartGame.addEventListener("click", () => {
+      setScreen("game");
+      if (!state.ending && state.lockedIds.size === 0 && !state.selectedId && state.phase === "intro" && !state.introVariant) {
+        resetGameRun();
+      } else if (state.lockedIds.size === 0 && !state.selectedId && !state.ending) {
+        if (!state.introVariant) {
+          state.introVariant = typeof GAME_DATA.getRandomIntroLine === "function" ? GAME_DATA.getRandomIntroLine() : "";
+        }
+        renderGameScreen();
+      }
+    });
+
+    btnGoAchievements.addEventListener("click", () => setScreen("achievements"));
+
+    btnAchBackStart.addEventListener("click", () => setScreen("start"));
+    btnAchReset.addEventListener("click", () => {
+      const ok = confirm("确定要清空已解锁的结局成就记录吗？");
+      if (ok) {
+        resetAchievements();
+        renderAchievementsScreen();
+      }
+    });
+
+    btnGameBackStart.addEventListener("click", () => setScreen("start"));
+    btnRestart.addEventListener("click", resetGameRun);
+
+    tabStageInvestigationEl.addEventListener("click", () => {
+      if (state.phase === "ended") return;
+      setStageTab("investigation");
+    });
+    tabStageSceneEl.addEventListener("click", () => {
+      if (state.phase === "ended") return;
+      setStageTab("scene");
+    });
+
+    tabEndingEl.addEventListener("click", () => {
+      if (state.phase !== "ended") return;
+      setEndingTab("ending");
+    });
+    tabRecapEl.addEventListener("click", () => {
+      if (state.phase !== "ended") return;
+      setEndingTab("recap");
+    });
+
+    btnRestartFromEnd.addEventListener("click", resetGameRun);
+    btnRestartFromRecap.addEventListener("click", resetGameRun);
+
+    btnEndingGoAchievements.addEventListener("click", () => setScreen("achievements"));
+    btnRecapGoAchievements.addEventListener("click", () => setScreen("achievements"));
+
+    // ===== 初始化 =====
+    (function init() {
+      state.phase = "intro";
+      state.selectedId = null;
+      state.judgments = {};
+      state.lockedIds = new Set();
+      state.introVariant = typeof GAME_DATA.getRandomIntroLine === "function"
+        ? GAME_DATA.getRandomIntroLine()
+        : "";
+      state.ending = null;
+      state.endingTab = "ending";
+      state.stageTab = "investigation";
+
+      setScreen("start");
+    })();
+  </script>
+</body>
+</html>
