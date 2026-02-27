@@ -129,7 +129,7 @@ const GAME_DATA = {
           "他用螺丝刀点了点地上的排插和灯控盒：\n“音响和灯控挤在一排，中间还被人拔插过。现在这声音像重启报错。”\n\n" +
           "他顿了一下，像是在回想什么：\n“刚才有一下挺怪，像不是从喇叭里出来的……算了，先当我听岔了。”\n\n" +
           "他把线捋顺一点，声音更低了：\n“本来想在她经过这边之前修好，至少别让音响当场发癫。结果越急越卡。”\n\n" +
-          "说完他把线往旁边拨开一点：\n“你先别踩这根，踩到就真要听它唱整晚了。\n\n”"+
+          "说完他把线往旁边拨开一点：\n“你先别踩这根，踩到就真要听它唱整晚了。”\n\n"+
           "他顿了一下，像是在回想什么：\n“刚才有一下挺怪，像不是从喇叭里出来的……更像墙根那边窸窣了一下，音响刚好也在叫，听着就混了。”\n\n",
         reactions: {
           guilty:
@@ -396,9 +396,11 @@ const GAME_DATA = {
         judged("douniwan") === true &&
         ids.filter(id => !["doufupi", "doubanjiang", "dounai", "douniwan"].includes(id)).every(id => judged(id) === false);
 
+      const mouseMentionIds = ["dounai", "douzhier", "doufupi", "doueyuan", "doubanjiang"];
+
       const mouseMentionPattern =
-        mouseMentionIds.every(id => judged(id) === false) &&
-        ids.filter(id => !["dounai", "douzhier", "doufupi", "doueyuan", "doubanjiang"].includes(id)).every(id => judged(id) === true);
+          mouseMentionIds.every(id => judged(id) === false) &&
+          ids.filter(id => !mouseMentionIds.includes(id)).every(id => judged(id) === true);
   
       let wrongAccusations = 0;
       let missedCulprits = 0;
