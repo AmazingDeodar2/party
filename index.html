@@ -31,6 +31,148 @@
 
     .hidden { display: none !important; }
 
+    /* 提示面板（用于主线hint、支线提示页） */
+    .hint-panel {
+      margin-top: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(15, 18, 32, 0.72);
+      padding: 12px;
+    }
+
+    .hint-head {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 0;
+    }
+
+    .hint-body {
+      min-width: 0;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .hint-headerline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 2px 0 4px;
+    }
+
+    .hint-badge {
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: rgba(255,255,255,.02);
+      white-space: nowrap;
+    }
+
+    .hint-avatar {
+      width: 300px;
+      height: 300px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #111528;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,.24);
+      position: relative;
+    }
+
+    .hint-avatar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+
+    .hint-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      display: block;
+      background: #0e1222;
+    }
+
+    .hint-avatar.fallback {
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 40px;
+    }
+
+    .hint-title {
+      font-weight: 700;
+      color: var(--gold);
+      font-size: 15px;
+    }
+
+    .hint-text {
+      color: #dbe6ff;
+      white-space: pre-line;
+      line-height: 1.6;
+    }
+
+    .assistant-section {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255,255,255,.08);
+    }
+    .assistant-section:first-of-type {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .assistant-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #dbe6ff;
+    }
+
+    .branch-hint-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .branch-hint-btn {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      line-height: 1.25;
+      text-align: center;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+
+    .branch-hint-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .branch-hint-btn.active {
+      border-color: rgba(255,217,143,.55);
+      color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(255,217,143,.10);
+    }
+
     .shell {
       max-width: 1280px;
       margin: 0 auto;
@@ -50,6 +192,27 @@
       border-radius: 12px;
       padding: 12px;
       background: rgba(15, 18, 32, 0.65);
+    }
+
+    .scene-photo-wrap {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #111528;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .scene-photo {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: min(100%, 420px);
+      max-height: 420px;
+      object-fit: contain;
+      background: #0e1222;
+      border-radius: 8px;
     }
 
     h1, h2, h3 { margin: 0 0 10px; }
@@ -217,7 +380,7 @@
     /* 竖卡立绘（主舞台用） */
     .avatar-portrait {
       width: 92px;
-      height: 124px; /* 接近 275x369 比例 */
+      height: 124px;
       border-radius: 12px;
       border: 1px solid var(--border);
       background: #111528;
@@ -369,7 +532,27 @@
       margin-right: 6px;
     }
 
+    /* 小屏 */
     @media (max-width: 980px) {
+      .hint-head {
+        grid-template-columns: 1fr;
+      }
+
+      .hint-avatar {
+        width: min(100%, 300px);
+        height: min(100vw - 80px, 300px);
+        margin: 0 auto;
+      }
+
+      .branch-hint-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hint-headerline {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
       .app { grid-template-columns: 1fr; }
       .sidebar { position: static; }
       .hero { min-height: auto; padding-top: 40px; }
@@ -390,6 +573,7 @@
         <div class="choices" style="justify-content:center; margin-top:18px;">
           <button class="gold" id="btn-start-game">开始调查</button>
           <button id="btn-go-achievements">成就界面</button>
+          <button id="btn-go-branch-hints">支线提示</button>
         </div>
       </div>
     </section>
@@ -405,8 +589,22 @@
       </div>
 
       <div class="panel">
-        <div class="muted" id="achievement-summary">已解锁 0 / 6 种结局</div>
+        <div class="muted" id="achievement-summary">已解锁 0 / 10 种结局</div>
         <div class="achievement-grid" id="achievement-grid"></div>
+      </div>
+    </section>
+
+    <!-- 支线提示页面 -->
+    <section id="screen-branch-hints" class="hidden">
+      <div class="top-nav">
+        <h2 style="margin:0;">支线提示</h2>
+        <div class="choices" style="margin-top:0;">
+          <button class="ghost" id="btn-branch-back-start">返回开始页面</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div id="branch-hints-content"></div>
       </div>
     </section>
 
@@ -487,64 +685,72 @@
   <script>
     // ===== 结局成就配置 =====
     const ENDING_META = {
-    good_end: {
+      good_end: {
         name: "完美结局",
         icon: "🎉",
         desc: "九人结果全部对上，派对虽然晚点，但终于正常开场。"
-    },
-    mixed: {
-        name: "勉强开场",
-        icon: "🧹",
-        desc: "有对有错，现场在互相吐槽中勉强恢复。"
-    },
-    too_kind: {
-        name: "都挺不容易",
-        icon: "🙂",
-        desc: "谁都不往名单里放，结果也没人先动手收拾。"
-    },
-    handler_blame: {
+      },
+      handler_blame: {
         name: "完美错位",
         icon: "🪞",
         desc: "你的结果和现场实际情况整整齐齐错开。"
-    },
-    label_judge: {
+      },
+      mixed: {
+        name: "勉强开场",
+        icon: "🧹",
+        desc: "有对有错，现场在互相吐槽中勉强恢复。"
+      },
+      too_kind: {
+        name: "都挺不容易",
+        icon: "🙂",
+        desc: "谁都不往名单里放，结果也没人先动手收拾。"
+      },
+            label_judge: {
         name: "一锅端",
         icon: "⚖️",
         desc: "九个人全进名单，派对原地升级成集体申诉会。"
-    },
-    conspiracy: {
+      },
+      conspiracy: {
         name: "伊德海拉入侵预案",
         icon: "🌀",
         desc: "特定组合触发异常事件，熟人局事故突然升级。"
-    },
-
-    // 新增暗线结局
-    fff_club: {
+      },
+      fff_club: {
         name: "FFF团",
         icon: "🔥",
         desc: "你点出了某个微妙四人组，现场气氛迅速转入熟人局八卦频道。"
-    },
-    best_partner: {
+      },
+      best_partner: {
         name: "最佳拍档",
         icon: "🎬",
         desc: "你看出了两人的配合默契，后来她们真把这份默契拍进了电影里。"
-    },
-    dorm_headache: {
+      },
+      dorm_headache: {
         name: "寝室长的噩梦",
         icon: "🛏️",
         desc: "这份名单精准唤醒了某人管理男生宿舍的旧日创伤。"
-    },
-    fox_slip: {
+      },
+        clear_eyes: {
+        name: "清澈的眼神",
+        icon: "👀",
+        desc: "你指认了四位更“沉得住气”的人，放走的那几位反而急着把每一步都讲清楚。"
+      },
+      mouse_line: {
+        name: "不速之客",
+        icon: "🐾",
+        desc: "你把提过窸窣的人都放过了，其余人全记上；那声墙根动静却在关键时刻再次响起。"
+      },
+      fox_slip: {
         name: "狐狸会漏出马脚",
         icon: "🦊",
         desc: "你把混在人堆里看戏的那个东西先拎了出来。"
-    }
+      }
     };
 
     // ===== 本地存储 Key =====
     const ACHIEVEMENT_STORAGE_KEY = "party_disaster_ending_achievements_v1";
 
-    // ===== 开始页随机文案（进门前语气）=====
+    // ===== 开始页随机文案 =====
     const START_SCREEN_LINES = [
       "你带着礼物站在门口，已经想好进去先夸一句布置真不错。",
       "你在门外还听见里面很热闹——至少听起来像是热闹。",
@@ -552,10 +758,11 @@
       "门把手刚压下去，你突然有种不太妙、但又很好笑的预感。"
     ];
 
-    // ===== 头像文件映射 =====
-    // 默认读取 ./avatars/ 目录。若图片直接放在 index 同级目录，改成 "./"
+    // ===== 资源 =====
     const AVATAR_BASE_PATH = "./";
-
+    const SCENE_IMAGE_MAP = {
+      missingCakeTable: "./table.png"
+    };
     const AVATAR_FILE_MAP = {
       "豆付皮": "doufupi.png",
       "豆雅财": "douyacai.png",
@@ -568,28 +775,30 @@
       "豆倪万": "douniwan.png"
     };
     const AVATAR_CROP_MAP = {
-    // 默认不写就是 "center 28%"
-    // 写法：x y（可以用百分比）
-    "豆雅财": "80% 28%",
-    "豆池": "center 60%",
-    "豆蛾渊": "40% 28%"
+      "豆雅财": "80% 28%",
+      "豆池": "center 60%",
+      "豆蛾渊": "40% 28%"
     };
+
     // ===== 状态 =====
     const state = {
-      screen: "start", // start | achievements | game
+      screen: "start", // start | achievements | branch_hints | game
       phase: "intro",  // intro | question | reacted | ended
       selectedId: null,
       judgments: {},
       lockedIds: new Set(),
       introVariant: "",
       ending: null,
-      endingTab: "ending", // ending | recap
-      stageTab: "investigation" // investigation | scene
+      endingTab: "ending",
+      stageTab: "investigation",
+      endingMainHintCache: null,  // 普通结局自动主线提示（本轮固定）
+      branchHintSelectedKey: null // 支线提示页选中的支线
     };
 
     // ===== DOM =====
     const screenStartEl = document.getElementById("screen-start");
     const screenAchievementsEl = document.getElementById("screen-achievements");
+    const screenBranchHintsEl = document.getElementById("screen-branch-hints");
     const screenGameEl = document.getElementById("screen-game");
 
     const startTitleEl = document.getElementById("start-title");
@@ -597,11 +806,15 @@
 
     const btnStartGame = document.getElementById("btn-start-game");
     const btnGoAchievements = document.getElementById("btn-go-achievements");
+    const btnGoBranchHints = document.getElementById("btn-go-branch-hints");
 
     const btnAchBackStart = document.getElementById("btn-ach-back-start");
     const btnAchReset = document.getElementById("btn-ach-reset");
     const achievementSummaryEl = document.getElementById("achievement-summary");
     const achievementGridEl = document.getElementById("achievement-grid");
+
+    const btnBranchBackStart = document.getElementById("btn-branch-back-start");
+    const branchHintsContentEl = document.getElementById("branch-hints-content");
 
     const gameTitleEl = document.getElementById("game-title");
     const btnGameBackStart = document.getElementById("btn-game-back-start");
@@ -633,6 +846,11 @@
     const btnRecapGoAchievements = document.getElementById("btn-recap-go-achievements");
 
     // ===== 工具函数 =====
+    function pickRandom(arr) {
+      if (!Array.isArray(arr) || arr.length === 0) return null;
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
     function escapeHtml(str) {
       return String(str)
         .replaceAll("&", "&amp;")
@@ -652,6 +870,37 @@
       return state.lockedIds.size === GAME_DATA.suspects.length;
     }
 
+    function getWrongSuspectIdsForCurrentRun() {
+      const wrong = [];
+      for (const s of GAME_DATA.suspects) {
+        if (!(s.id in state.judgments)) continue;
+        const judged = !!state.judgments[s.id];
+        const truth = !!s.isCulprit;
+        if (judged !== truth) wrong.push(s.id);
+      }
+      return wrong;
+    }
+
+    function buildMainlineHintForMixedEnding() {
+      if (!state.ending || state.ending.key !== "mixed") return null;
+
+      const wrongIds = getWrongSuspectIdsForCurrentRun();
+      if (wrongIds.length === 0) return null;
+
+      const pickedId = pickRandom(wrongIds);
+      const suspect = getSuspectById(pickedId);
+      const hintList = GAME_DATA.mainlineHintsBySuspect?.[pickedId] || [];
+      const hintText = pickRandom(hintList);
+
+      if (!hintText) return null;
+
+      return {
+        suspectId: pickedId,
+        suspectName: suspect?.name || pickedId,
+        text: hintText
+      };
+    }
+
     function getAvatar(s) {
       const fileName = AVATAR_FILE_MAP[s.name];
       if (fileName) return AVATAR_BASE_PATH + fileName;
@@ -663,22 +912,22 @@
     }
 
     function getAvatarHtml(s, extraClass = "") {
-        const src = getAvatar(s);
-        const fallback = escapeHtml(getAvatarFallbackText(s));
-        const cls = extraClass ? `avatar ${extraClass}` : "avatar";
-        const crop = AVATAR_CROP_MAP[s.name] || "center 28%";
+      const src = getAvatar(s);
+      const fallback = escapeHtml(getAvatarFallbackText(s));
+      const cls = extraClass ? `avatar ${extraClass}` : "avatar";
+      const crop = AVATAR_CROP_MAP[s.name] || "center 28%";
 
-        if (src) {
-            return `
-            <div class="${cls}" aria-hidden="true">
-                <img src="${escapeHtml(src)}" alt="${escapeHtml(s.name)}头像"
-                    style="object-position:${escapeHtml(crop)};"
-                    onerror="this.remove(); this.parentElement.textContent='${fallback}';" />
-            </div>
-            `;
-        }
+      if (src) {
+        return `
+          <div class="${cls}" aria-hidden="true">
+            <img src="${escapeHtml(src)}" alt="${escapeHtml(s.name)}头像"
+                 style="object-position:${escapeHtml(crop)};"
+                 onerror="this.remove(); this.parentElement.textContent='${fallback}';" />
+          </div>
+        `;
+      }
 
-        return `<div class="${cls}" aria-hidden="true">${fallback}</div>`;
+      return `<div class="${cls}" aria-hidden="true">${fallback}</div>`;
     }
 
     function getPortraitAvatarHtml(s, extraClass = "") {
@@ -696,6 +945,108 @@
       }
 
       return `<div class="${cls} fallback" aria-hidden="true">${fallback}</div>`;
+    }
+
+    // ===== 主线hint（仅普通结局显示，放在结局文字下）=====
+    function renderMainlineHintBox() {
+      if (!state.ending || state.ending.key !== "mixed") return "";
+
+      const payload = state.endingMainHintCache;
+      if (!payload) return "";
+
+      return `
+        <div class="hint-panel">
+          <div class="assistant-section">
+            <div class="assistant-section-title">本轮提示</div>
+            <div class="small" style="margin-top:2px;">这轮可以回头留意：${escapeHtml(payload.suspectName)}</div>
+            <div class="hint-text" style="margin-top:8px;">${nl2br(payload.text || "")}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== 支线提示页 =====
+    function renderBranchHintPage() {
+      const assistant = GAME_DATA.hintAssistant || {};
+      const assistantName = assistant.name || "鹅侦探";
+      const assistantAvatar = assistant.avatar ? `./${assistant.avatar}` : "";
+
+      const branchHints = GAME_DATA.assistantBranchHints || {};
+      const entries = Object.entries(branchHints);
+
+      if (!entries.length) {
+        branchHintsContentEl.innerHTML = `
+          <div class="card">
+            <h3>支线提示</h3>
+            <div class="muted">当前没有可用的支线提示。</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (!state.branchHintSelectedKey || !branchHints[state.branchHintSelectedKey]) {
+        state.branchHintSelectedKey = entries[0][0];
+      }
+
+      const selected = branchHints[state.branchHintSelectedKey];
+
+      const avatarHtml = assistantAvatar
+        ? `
+          <div class="hint-avatar" aria-hidden="true">
+            <img src="${escapeHtml(assistantAvatar)}" alt="${escapeHtml(assistantName)}"
+                 onerror="this.remove(); this.parentElement.classList.add('fallback'); this.parentElement.textContent='E';" />
+          </div>
+        `
+        : `<div class="hint-avatar fallback" aria-hidden="true">E</div>`;
+
+      const buttonsHtml = entries.map(([key, item]) => `
+        <button
+          type="button"
+          class="branch-hint-btn ${state.branchHintSelectedKey === key ? "active" : ""}"
+          data-branch-key="${escapeHtml(key)}"
+        >
+          ${escapeHtml(item.name)}
+        </button>
+      `).join("");
+
+      branchHintsContentEl.innerHTML = `
+        <div class="hint-panel" style="margin-top:0;">
+          <div class="hint-head">
+            ${avatarHtml}
+            <div class="hint-body">
+              <div class="hint-headerline">
+                <div class="hint-title">${escapeHtml(assistantName)} · 支线提示</div>
+                <div class="hint-badge"></div>
+              </div>
+
+              <div class="assistant-section">
+                <div class="assistant-section-title">选择支线</div>
+                <div class="branch-hint-list">
+                  ${buttonsHtml}
+                </div>
+              </div>
+
+              <div class="assistant-section">
+                <div class="assistant-section-title">${escapeHtml(selected?.name || "提示")}</div>
+                <div class="hint-text" style="margin-top:8px;">${nl2br(selected?.hint || "")}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      bindBranchHintPageEvents();
+    }
+
+    function bindBranchHintPageEvents() {
+      document.querySelectorAll(".branch-hint-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.branchKey;
+          if (!key) return;
+          state.branchHintSelectedKey = key;
+          renderBranchHintPage();
+        });
+      });
     }
 
     // ===== 成就存储 =====
@@ -733,10 +1084,12 @@
 
       screenStartEl.classList.toggle("hidden", screen !== "start");
       screenAchievementsEl.classList.toggle("hidden", screen !== "achievements");
+      screenBranchHintsEl.classList.toggle("hidden", screen !== "branch_hints");
       screenGameEl.classList.toggle("hidden", screen !== "game");
 
       if (screen === "start") renderStartScreen();
       if (screen === "achievements") renderAchievementsScreen();
+      if (screen === "branch_hints") renderBranchHintPage();
       if (screen === "game") renderGameScreen();
     }
 
@@ -744,7 +1097,9 @@
     function renderStartScreen() {
       startTitleEl.textContent = GAME_DATA.title || "派对时间！";
       const line = START_SCREEN_LINES[Math.floor(Math.random() * START_SCREEN_LINES.length)];
-      startQuoteEl.innerHTML = nl2br("你收到一张豆家人的派对邀请。\n按邀请函上的说法，今晚会是一场“绝对不会出意外”的完美聚会。\n" + line);
+      startQuoteEl.innerHTML = nl2br(
+        "你收到一张豆家人的派对邀请。\n按邀请函上的说法，今晚会是一场“绝对不会出意外”的完美聚会。\n" + line
+      );
     }
 
     // ===== 成就页 =====
@@ -760,16 +1115,16 @@
         const item = document.createElement("div");
         item.className = "achievement-item" + (isUnlocked ? " unlocked" : "");
         item.innerHTML = `
-        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="display:flex;align-items:center;gap:6px;">
             <span class="achievement-icon">${isUnlocked ? meta.icon : "❔"}</span>
             <div style="font-weight:700;">${escapeHtml(meta.name)}</div>
-        </div>
-        <div class="small" style="margin-top:8px;">
+          </div>
+          <div class="small" style="margin-top:8px;">
             ${escapeHtml(isUnlocked ? meta.desc : "尚未解锁。继续尝试不同的选择组合。")}
-        </div>
-        <div style="margin-top:8px;">
+          </div>
+          <div style="margin-top:8px;">
             <span class="tag ${isUnlocked ? "gold" : ""}">${isUnlocked ? "已解锁" : "未解锁"}</span>
-        </div>
+          </div>
         `;
         achievementGridEl.appendChild(item);
       });
@@ -787,6 +1142,8 @@
       state.ending = null;
       state.endingTab = "ending";
       state.stageTab = "investigation";
+      state.endingMainHintCache = null;
+      // state.branchHintSelectedKey 不重置：支线提示页保留用户上次选择
       endingPanelEl.classList.add("hidden");
       renderGameScreen();
     }
@@ -860,6 +1217,15 @@
         <div class="card" style="margin-top:10px;">
           <h2>现场</h2>
           <div class="preline">${nl2br(GAME_DATA.sceneDescription || "")}</div>
+
+          <div class="scene-photo-wrap">
+            <img
+              class="scene-photo"
+              src="${escapeHtml(SCENE_IMAGE_MAP.missingCakeTable)}"
+              alt="蛋糕不见了的桌子现场"
+              onerror="this.parentElement.style.display='none';"
+            />
+          </div>
         </div>
       `;
     }
@@ -872,6 +1238,15 @@
         <div class="card">
           <h2>场景总览</h2>
           <div class="preline">${nl2br(GAME_DATA.sceneDescription || "")}</div>
+
+          <div class="scene-photo-wrap">
+            <img
+              class="scene-photo"
+              src="${escapeHtml(SCENE_IMAGE_MAP.missingCakeTable)}"
+              alt="蛋糕不见了的桌子现场"
+              onerror="this.parentElement.style.display='none';"
+            />
+          </div>
         </div>
 
         <div class="card" style="margin-top:10px;">
@@ -977,7 +1352,7 @@
     }
 
     // ===== 结局区 =====
-    function setEndingTab(tab, canShowRecap = !!(state.ending && state.ending.unlockTruthRecap)) {
+    function setEndingTab(tab, canShowRecap = false) {
       if (tab === "recap" && !canShowRecap) tab = "ending";
       state.endingTab = tab;
 
@@ -993,7 +1368,11 @@
       if (!state.ending) return;
 
       endingTitleEl.textContent = state.ending.title || "结局";
-      endingTextEl.innerHTML = nl2br(state.ending.text || "");
+
+      // 只保留主线hint（普通结局）
+      endingTextEl.innerHTML =
+        nl2br(state.ending.text || "") +
+        renderMainlineHintBox();
 
       judgeRecordEl.innerHTML = "";
       GAME_DATA.suspects.forEach(s => {
@@ -1015,12 +1394,10 @@
         judgeRecordEl.appendChild(item);
       });
 
-        const canShowRecap = false;
-        tabRecapEl.classList.add("hidden");
-
-        // 不再使用复盘内容
-        recapTitleEl.textContent = "";
-        recapTextEl.innerHTML = "";
+      const canShowRecap = false;
+      tabRecapEl.classList.add("hidden");
+      recapTitleEl.textContent = "";
+      recapTextEl.innerHTML = "";
 
       endingPanelEl.classList.remove("hidden");
       setEndingTab(state.endingTab, canShowRecap);
@@ -1038,6 +1415,9 @@
         if (firstTimeEnterEnding || !state.ending) {
           state.ending = GAME_DATA.evaluateEnding(state);
           unlockEndingAchievement(state.ending.key);
+
+          // 普通结局：生成本轮固定主线提示
+          state.endingMainHintCache = buildMainlineHintForMixedEnding();
         }
 
         renderEndingPanel();
@@ -1070,6 +1450,7 @@
     });
 
     btnGoAchievements.addEventListener("click", () => setScreen("achievements"));
+    btnGoBranchHints.addEventListener("click", () => setScreen("branch_hints"));
 
     btnAchBackStart.addEventListener("click", () => setScreen("start"));
     btnAchReset.addEventListener("click", () => {
@@ -1079,6 +1460,8 @@
         renderAchievementsScreen();
       }
     });
+
+    btnBranchBackStart.addEventListener("click", () => setScreen("start"));
 
     btnGameBackStart.addEventListener("click", () => setScreen("start"));
     btnRestart.addEventListener("click", resetGameRun);
@@ -1119,7 +1502,8 @@
       state.ending = null;
       state.endingTab = "ending";
       state.stageTab = "investigation";
-
+      state.endingMainHintCache = null;
+      state.branchHintSelectedKey = null;
       setScreen("start");
     })();
   </script>
